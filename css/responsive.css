@@ -1,0 +1,170 @@
+/**
+ * Responsive behaviour.
+ *
+ * Priority order, as specified: corporate laptops first, then Full HD, then
+ * tablets, with phones as a working fallback. Nothing is hidden on a phone
+ * that carries meaning — the layout collapses to one column, the engineering
+ * layer opens below the copy instead of beside it, and the progress rail
+ * becomes the hairline under the top bar.
+ */
+
+/* Very wide screens: hold the measure, let the margins grow. */
+@media (min-width: 1800px) {
+  :root { --measure: 48ch; }
+  .beat__inner { grid-template-columns: minmax(0, 48ch) minmax(0, 46ch); }
+}
+
+/* Short laptops: 1366×768 is the machine this has to feel good on. */
+@media (max-height: 820px) {
+  :root {
+    --size-display: clamp(1.9rem, 3.4vw, 2.7rem);
+    --size-year-ghost: clamp(4rem, 9vw, 7.5rem);
+    --s-6: 2.5rem;
+  }
+
+  .beat__content { gap: var(--s-3); }
+  .deepdive__inner { max-height: 76svh; }
+  .beat__year { margin-bottom: -0.22em; }
+}
+
+/* Tablets and small laptops: one column, engineering layer opens below. */
+@media (max-width: 1080px) {
+  .beat__inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-4);
+    max-height: 100svh;
+  }
+
+  .beat__aside { align-self: start; }
+
+  /* The panel is in flow now, so the pinned stage needs an escape valve.
+     Scroll chaining stays on: reaching the end continues the journey. */
+  .beat.is-deepdive-open .beat__inner {
+    overflow-y: auto;
+    align-content: start;
+    padding-block: calc(var(--s-7) + var(--s-5)) var(--s-6);
+  }
+
+  .deepdive__inner { max-height: none; overflow: visible; }
+
+  .beat__year { margin-bottom: -0.2em; }
+
+  .chapter-row__link { grid-template-columns: 2.75rem minmax(0, 1fr) 8rem; }
+  .chapter-row__status { display: none; }
+}
+
+/* Phones: the rail moves under the top bar, chrome shrinks to icons. */
+@media (max-width: 720px) {
+  :root {
+    --gutter: 1.25rem;
+    --measure: 100%;
+    --size-lead: 1.0625rem;
+  }
+
+  .topbar { padding: var(--s-3) var(--gutter); }
+
+  /* The rail lives at the bottom here, so the list can use the full width. */
+  .outro__stage { padding-right: var(--gutter); }
+  .topbar__course { display: none; }
+  .topbar__action span:not(.topbar__count) { display: none; }
+  .topbar__action { padding: var(--s-2); }
+
+  .rail {
+    top: auto;
+    right: auto;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    transform: none;
+    padding: var(--s-2) var(--gutter) var(--s-3);
+    background: linear-gradient(to top, rgba(5, 7, 10, 0.92), transparent);
+  }
+
+  /* Horizontal on a phone: a line across the bottom instead of down the side. */
+  .rail__track { height: auto; width: 100%; padding-top: var(--s-4); }
+
+  .rail__line {
+    inset: auto 0 6px 0;
+    height: 1px;
+    background: var(--hairline-strong);
+  }
+
+  .rail__cursor {
+    top: auto;
+    bottom: 4px;
+    left: calc(var(--rail-position, 0) * 100%);
+    margin: 0;
+  }
+
+  .rail__list { position: relative; inset: auto; height: 0; }
+
+  .rail__item {
+    right: auto;
+    top: auto;
+    left: var(--rail-offset);
+    transform: translate(-50%, -100%);
+  }
+
+  .rail__button { flex-direction: column; gap: var(--s-1); }
+
+  .rail__tick { display: none; }
+
+  .rail__label {
+    opacity: 0;
+    transform: none;
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+  }
+
+  /* Only the active label survives — six stacked labels would collide. */
+  .rail__item.is-active .rail__label { opacity: 1; }
+  .rail:hover .rail__label,
+  .rail:focus-within .rail__label { opacity: 0; }
+  .rail__item.is-active .rail__label,
+  .rail__button:focus-visible .rail__label { opacity: 1; }
+
+  /* Scrolling is the native gesture here, and the button would sit on top of
+     the copy. The rail keeps the sense of position. */
+  .advance { display: none; }
+
+  /* Re-centre the vignette: there is no side column to protect on a phone. */
+  .backdrop-veil {
+    background:
+      radial-gradient(130% 68% at 50% 46%, rgba(5, 7, 10, 0.92) 0%, rgba(5, 7, 10, 0.55) 52%, rgba(5, 7, 10, 0.2) 82%),
+      linear-gradient(to bottom, rgba(5, 7, 10, 0.8) 0%, transparent 18%, transparent 74%, rgba(5, 7, 10, 0.9) 100%);
+  }
+
+  .chapter-row__link {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    gap: var(--s-3);
+  }
+
+  .chapter-row__era { display: none; }
+
+  .overlay { padding: var(--s-4) var(--s-3); }
+  .overlay__panel { padding: var(--s-4) var(--s-4) var(--s-5); max-height: 88svh; }
+
+  .mindmap__svg { min-width: 460px; }
+  .mindmap { overflow-x: auto; justify-items: start; }
+
+  .intro__stage { padding-bottom: var(--s-7); }
+}
+
+/* Touch devices get bigger targets — the rail is the tightest control here. */
+@media (pointer: coarse) {
+  .rail__button { min-height: 44px; }
+  .topbar__action { min-height: 44px; min-width: 44px; justify-content: center; }
+  .advance { min-height: 44px; }
+}
+
+/* Print: the journey flattens into a readable document. */
+@media print {
+  .backdrop, .backdrop-veil, .rail, .topbar, .advance, .overlay { display: none !important; }
+
+  .beat, .intro { height: auto; }
+  .beat__stage, .intro__stage { position: static; height: auto; padding-block: 2rem; }
+  .beat__inner, .intro__stage { opacity: 1 !important; transform: none !important; }
+  .deepdive__panel { display: block !important; height: auto !important; }
+
+  body { background: #fff; color: #111; }
+}

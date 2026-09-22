@@ -1,0 +1,818 @@
+/**
+ * Components.
+ *
+ * House rules, so none of this drifts into dashboard territory:
+ *   · no filled cards, no drop shadows, no rounded panels floating on nothing
+ *   · separation is a hairline or negative space, never a box
+ *   · colour is carried by the era accent, applied to one element at a time
+ */
+
+/* ------------------------------------------------------- didactic markers */
+
+.marker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--marker-tint, var(--text-faint));
+}
+
+.marker--concept { --marker-tint: var(--marker-concept); }
+.marker--engineering { --marker-tint: var(--marker-engineering); }
+.marker--copilot { --marker-tint: var(--marker-copilot); }
+
+.marker__sigil {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.marker__sigil .solid { fill: currentColor; stroke: none; }
+
+.marker__label { color: currentColor; }
+
+/* --------------------------------------------------------- essential layer */
+
+.essential {
+  display: grid;
+  gap: var(--s-3);
+  padding-top: var(--s-2);
+}
+
+/* A label bar rather than a heading: CONCEPT ————————— ESSENTIAL. */
+.essential__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.essential__head::after {
+  content: '';
+  order: 1;
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+}
+
+.essential__layer {
+  order: 2;
+  color: var(--text-faint);
+}
+
+/* --------------------------------------------------- engineering deep dive */
+
+.deepdive__toggle {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3) var(--s-2) 0;
+  color: var(--text-dim);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.deepdive__toggle:hover { color: var(--text-bright); }
+
+.deepdive__toggle .marker { color: var(--marker-engineering); }
+
+.deepdive__chevron {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.deepdive__toggle[aria-expanded='true'] .deepdive__chevron { transform: rotate(90deg); }
+
+.deepdive__panel {
+  position: relative;
+  overflow: hidden;
+  border-left: 1px solid var(--hairline-strong);
+}
+
+.deepdive__inner {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-2) 0 var(--s-2) clamp(1.25rem, 2.2vw, 2.25rem);
+  max-height: 82svh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+
+/* Long deep dives scroll. Say so, instead of ending on a sliced line. */
+.deepdive__panel.is-scrollable::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3.5rem;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--ink-950) 6%, transparent);
+}
+
+/* A panel heading, not a page heading — it must not out-shout the beat title. */
+.deepdive__title {
+  font-size: var(--size-lead);
+  font-weight: 300;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--track-tight);
+  color: var(--text-bright);
+}
+
+.notes { display: grid; gap: var(--s-2); }
+
+.notes__item {
+  position: relative;
+  padding-left: var(--s-4);
+  color: var(--text-dim);
+  font-size: var(--size-small);
+  line-height: var(--leading-body);
+}
+
+.notes__item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.66em;
+  width: 8px;
+  height: 1px;
+  background: var(--marker-engineering);
+  opacity: 0.7;
+}
+
+/* ------------------------------------------------------------ flow diagram */
+
+.flow {
+  display: grid;
+  gap: 0;
+  padding: var(--s-2) 0;
+}
+
+.flow__step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: baseline;
+  column-gap: var(--s-3);
+  padding-block: 0.45rem;
+}
+
+/* The spine: a hairline joining consecutive steps. */
+.flow__step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 4.5px;
+  top: 1.45em;
+  bottom: -0.35em;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--marker-engineering) 55%, transparent),
+    color-mix(in srgb, var(--marker-engineering) 12%, transparent)
+  );
+}
+
+.flow__dot {
+  grid-row: 1 / span 2;
+  align-self: start;
+  margin-top: 0.52em;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--marker-engineering);
+  border-radius: 50%;
+  background: var(--ink-950);
+}
+
+.flow__label {
+  color: var(--text-bright);
+  font-size: var(--size-body);
+  line-height: 1.4;
+}
+
+.flow__note {
+  grid-column: 2;
+  color: var(--text-faint);
+  text-transform: none;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------------ copilot note */
+
+.copilot-note {
+  display: grid;
+  gap: var(--s-2);
+  padding-left: var(--s-4);
+  border-left: 1px solid color-mix(in srgb, var(--marker-copilot) 40%, transparent);
+}
+
+.copilot-note--inline { margin-top: var(--s-2); }
+
+.copilot-note__title {
+  font-size: var(--size-small);
+  font-weight: 450;
+  color: var(--text);
+}
+
+.copilot-note__example {
+  color: var(--marker-copilot);
+  text-transform: none;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------- interactive module slot */
+
+.lab__placeholder {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border: 1px dashed var(--hairline-strong);
+}
+
+.lab__tag { color: var(--era-accent); }
+
+.lab__name {
+  font-family: var(--font-mono);
+  font-size: var(--size-small);
+  color: var(--text);
+}
+
+.lab__hint {
+  font-size: var(--size-small);
+  color: var(--text-faint);
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------- top bar */
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-topbar);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--gutter);
+  border-bottom: 1px solid transparent;
+  background: linear-gradient(to bottom, rgba(5, 7, 10, 0.88), transparent);
+  transition: border-color var(--dur-base) var(--ease-out),
+              background var(--dur-base) var(--ease-out);
+}
+
+/* Once the journey starts, real copy scrolls underneath. The bar stops being
+   a gradient and becomes a surface, or the two sets of text collide. */
+.is-journeying .topbar {
+  border-bottom-color: var(--hairline);
+  background: linear-gradient(
+    to bottom,
+    rgba(5, 7, 10, 0.97) 0%,
+    rgba(5, 7, 10, 0.94) 62%,
+    rgba(5, 7, 10, 0) 100%
+  );
+}
+
+.topbar__progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 1px;
+  width: 100%;
+  transform: scaleX(var(--doc-progress, 0));
+  transform-origin: left;
+  background: var(--era-accent);
+  opacity: 0.75;
+}
+
+.topbar__brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.topbar__client { color: var(--text); }
+
+.topbar__course {
+  font-size: var(--size-small);
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.topbar__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--size-small);
+  color: var(--text-dim);
+  border: 1px solid transparent;
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+
+.topbar__action:hover,
+.topbar__action[aria-pressed='true'] {
+  color: var(--text-bright);
+  border-color: var(--hairline-strong);
+}
+
+.topbar__action .icon {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.topbar__count {
+  color: var(--era-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.topbar__action.is-pulsing { color: var(--text-bright); }
+.topbar__action.is-pulsing .topbar__count { animation: count-pulse 1.5s var(--ease-out); }
+
+@keyframes count-pulse {
+  0% { opacity: 0.4; }
+  18% { opacity: 1; transform: translateY(-2px); }
+  100% { opacity: 1; transform: none; }
+}
+
+.reduced-motion .topbar__action.is-pulsing .topbar__count { animation: none; }
+
+/* --------------------------------------------------------- progress rail */
+
+.rail {
+  position: fixed;
+  top: 50%;
+  right: clamp(1rem, 2.4vw, 2.75rem);
+  z-index: var(--z-rail);
+  transform: translateY(-50%);
+  --rail-height: min(52vh, 460px);
+  --rail-accent: var(--era-accent);
+}
+
+.rail__track {
+  position: relative;
+  height: var(--rail-height);
+  width: 1px;
+}
+
+.rail__line {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--hairline-strong) 8%,
+    var(--hairline-strong) 92%,
+    transparent
+  );
+}
+
+.rail__cursor {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--rail-position, 0) * 100%);
+  width: 5px;
+  height: 5px;
+  margin-left: -2px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--rail-accent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--rail-accent) 70%, transparent);
+  transition: background var(--dur-slow) var(--ease-out);
+}
+
+.rail__list {
+  position: absolute;
+  inset: 0;
+}
+
+.rail__item {
+  position: absolute;
+  right: 0;
+  top: var(--rail-offset);
+  transform: translateY(-50%);
+}
+
+.rail__button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  white-space: nowrap;
+}
+
+.rail__tick {
+  order: 2;
+  width: 9px;
+  height: 1px;
+  background: var(--hairline-strong);
+  transition: width var(--dur-base) var(--ease-out),
+              background var(--dur-base) var(--ease-out);
+}
+
+.rail__label {
+  order: 1;
+  color: var(--text-faint);
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out),
+              color var(--dur-base) var(--ease-out);
+}
+
+/* Only the era you are in is labelled — until you ask for the whole map. */
+.rail__item.is-active .rail__label { opacity: 1; transform: none; color: var(--text); }
+.rail__item.is-active .rail__tick { width: 20px; background: var(--rail-accent); }
+
+.rail:hover .rail__label,
+.rail:focus-within .rail__label { opacity: 1; transform: none; }
+
+.rail__button:hover .rail__tick { width: 16px; background: var(--text-dim); }
+.rail__button:hover .rail__label { color: var(--text); }
+.rail__button:disabled { cursor: default; }
+.rail:hover .rail__button:disabled .rail__label,
+.rail:focus-within .rail__button:disabled .rail__label { opacity: 0.45; }
+
+/* --------------------------------------------------------- advance button */
+
+.advance {
+  position: fixed;
+  right: clamp(1rem, 2.4vw, 2.75rem);
+  bottom: clamp(1.25rem, 3vh, 2.5rem);
+  z-index: var(--z-rail);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  color: var(--text-faint);
+  border: 1px solid var(--hairline);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+
+.is-journeying .advance { opacity: 1; pointer-events: auto; }
+.has-overlay .advance { opacity: 0; pointer-events: none; }
+
+.advance:hover {
+  color: var(--text-bright);
+  border-color: var(--hairline-strong);
+}
+
+.advance__icon {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------------------------------------------------------------- overlay */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 4vh, 3rem) var(--gutter);
+}
+
+.overlay__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 6, 9, 0.82);
+  backdrop-filter: blur(9px);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.overlay.is-open .overlay__scrim { opacity: 1; }
+
+.overlay__panel {
+  position: relative;
+  width: min(100%, 940px);
+  max-height: min(86vh, 900px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--s-5);
+  padding: var(--s-5) clamp(1.25rem, 3vw, 2.75rem) var(--s-5);
+  background: linear-gradient(to bottom, var(--ink-850), var(--ink-950));
+  border: 1px solid var(--hairline);
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition: opacity var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out);
+}
+
+.overlay.is-open .overlay__panel { opacity: 1; transform: none; }
+
+.overlay__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding-bottom: var(--s-4);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.overlay__eyebrow { color: var(--era-accent); }
+
+.overlay__title {
+  font-size: var(--size-title);
+  font-weight: 250;
+  letter-spacing: var(--track-tight);
+  color: var(--text-bright);
+  margin-top: var(--s-2);
+}
+
+.overlay__close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  color: var(--text-dim);
+  border: 1px solid var(--hairline);
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+
+.overlay__close:hover { color: var(--text-bright); border-color: var(--hairline-strong); }
+
+.overlay__close .icon {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.overlay__body { overflow-y: auto; overscroll-behavior: contain; }
+
+.overlay__footnote {
+  margin-top: var(--s-5);
+  color: var(--text-faint);
+  font-size: var(--size-small);
+}
+
+/* ----------------------------------------------------------- chapter list */
+
+.chapter-list { display: grid; }
+
+.chapter-row {
+  --row-accent: var(--era-accent);
+  border-top: 1px solid var(--hairline);
+}
+.chapter-row:last-child { border-bottom: 1px solid var(--hairline); }
+
+.chapter-row__link {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) 9rem 11rem;
+  align-items: baseline;
+  gap: var(--s-4);
+  width: 100%;
+  padding: var(--s-4) 0;
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.chapter-list--compact .chapter-row__link {
+  grid-template-columns: 3rem minmax(0, 1fr) 9rem;
+  padding: var(--s-3) 0;
+}
+
+.chapter-row__number {
+  color: var(--text-faint);
+  font-size: var(--size-small);
+  letter-spacing: 0.12em;
+}
+
+.chapter-row__text { display: grid; gap: 2px; min-width: 0; }
+
+.chapter-row__title {
+  color: var(--text-dim);
+  font-size: var(--size-body);
+  line-height: 1.35;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.chapter-row__summary {
+  color: var(--text-faint);
+  font-size: var(--size-small);
+  line-height: 1.45;
+}
+
+.chapter-row__era,
+.chapter-row__status { color: var(--text-faint); }
+
+.chapter-row--available .chapter-row__number,
+.chapter-row--available .chapter-row__era { color: var(--row-accent); }
+
+.chapter-row--available .chapter-row__title { color: var(--text-bright); }
+
+.chapter-row--available .chapter-row__link:hover {
+  background: linear-gradient(to right, rgba(226, 236, 248, 0.04), transparent 62%);
+}
+
+.chapter-row--available .chapter-row__link:hover .chapter-row__title { color: var(--text-bright); }
+
+/* -------------------------------------------------------------- mind map */
+
+.mindmap { display: grid; justify-items: center; }
+
+.mindmap__svg {
+  width: min(100%, 640px);
+  height: auto;
+  overflow: visible;
+}
+
+.mindmap__link {
+  --node-accent: var(--era-accent);
+  fill: none;
+  stroke: var(--hairline-strong);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+  transition: stroke var(--dur-slow) var(--ease-out),
+              stroke-dasharray var(--dur-slow) var(--ease-out);
+}
+
+.mindmap__link.is-revealed {
+  stroke: color-mix(in srgb, var(--node-accent) 50%, transparent);
+  stroke-dasharray: none;
+}
+
+.mindmap__node { --node-accent: var(--era-accent); }
+
+.mindmap__halo {
+  fill: color-mix(in srgb, var(--node-accent) 16%, transparent);
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.mindmap__ring {
+  fill: var(--ink-950);
+  stroke: var(--hairline-strong);
+  stroke-width: 1;
+  transition: stroke var(--dur-slow) var(--ease-out);
+}
+
+.mindmap__core {
+  fill: var(--text-faint);
+  transition: fill var(--dur-slow) var(--ease-out);
+}
+
+.mindmap__label {
+  fill: var(--text-faint);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 350;
+  transition: fill var(--dur-slow) var(--ease-out);
+}
+
+.mindmap__note {
+  fill: var(--text-faint);
+  font-size: 9px;
+  opacity: 0.55;
+}
+
+.mindmap__node.is-revealed .mindmap__halo { opacity: 1; }
+.mindmap__node.is-revealed .mindmap__ring { stroke: var(--node-accent); }
+.mindmap__node.is-revealed .mindmap__core { fill: var(--node-accent); }
+.mindmap__node.is-revealed .mindmap__label { fill: var(--text-bright); }
+.mindmap__node.is-revealed .mindmap__note { opacity: 0.8; }
+
+.mindmap__node.is-new .mindmap__halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: node-arrive 1.4s var(--ease-out);
+}
+
+@keyframes node-arrive {
+  0% { opacity: 0; transform: scale(0.4); }
+  40% { opacity: 1; transform: scale(1.5); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.reduced-motion .mindmap__node.is-new .mindmap__halo { animation: none; }
+
+/* Keeps the page behind an open overlay from scrolling, without losing the
+   reader's place in the journey. */
+.has-overlay { overflow: hidden; }
+
+/* ------------------------------------------------------ skip link, noscript */
+
+.skip-link {
+  position: fixed;
+  top: var(--s-3);
+  left: var(--s-3);
+  z-index: calc(var(--z-overlay) + 1);
+  padding: var(--s-2) var(--s-4);
+  background: var(--ink-800);
+  border: 1px solid var(--era-accent);
+  color: var(--text-bright);
+  font-size: var(--size-small);
+  transform: translateY(-160%);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible { transform: none; }
+
+.noscript {
+  max-width: 62ch;
+  margin: 22vh auto;
+  padding: 0 var(--gutter);
+  display: grid;
+  gap: var(--s-4);
+}
+
+.noscript h1 {
+  font-size: var(--size-title);
+  font-weight: 250;
+  letter-spacing: var(--track-tight);
+  color: var(--text-bright);
+}
+
+.noscript p { color: var(--text-dim); }
+
+/* ---------------------------------------------------------------- glossary */
+
+.overlay__section {
+  margin-top: var(--s-6);
+  display: grid;
+  gap: var(--s-4);
+}
+
+.overlay__section-title {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--era-accent);
+}
+
+.glossary { display: grid; }
+
+.glossary__row {
+  display: grid;
+  grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.glossary__term {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  color: var(--text-bright);
+}
+
+.glossary__chapter {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  color: var(--text-faint);
+}
+
+.glossary__definition {
+  color: var(--text-dim);
+  font-size: var(--size-small);
+  line-height: var(--leading-body);
+}
+
+@media (max-width: 720px) {
+  .glossary__row { grid-template-columns: minmax(0, 1fr); gap: var(--s-1); }
+}

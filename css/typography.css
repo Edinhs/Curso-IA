@@ -1,0 +1,89 @@
+/**
+ * Typography.
+ *
+ * Both families are served from `assets/fonts` — no Google Fonts, no CDN.
+ * Inter carries an optical-size axis, which is why the hero can be set at
+ * 17rem without the letterforms turning into balloons.
+ */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin-variable.woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-mono-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-mono-500.woff2') format('woff2');
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--size-body);
+  line-height: var(--leading-body);
+  font-optical-sizing: auto;
+  font-feature-settings: 'cv05' 1, 'ss03' 1;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* The mono voice: every label, tag, year and technical caption. */
+.mono,
+.beat__eyebrow,
+.beat__chapter,
+.marker__label,
+.essential__layer,
+.rail__label,
+.topbar__client,
+.topbar__count,
+.overlay__eyebrow,
+.chapter-row__era,
+.chapter-row__status,
+.chapter-row__number,
+.flow__note,
+.lab__tag,
+.advance__label,
+.intro__cue-label,
+.copilot-note__example,
+.outro__eyebrow,
+.mindmap__note {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  font-weight: 400;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.prose {
+  max-width: var(--measure);
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+.prose + .prose { margin-top: var(--s-4); }
+
+.prose--dim { color: var(--text-dim); }
+
+/* Inline highlight, written as [[double brackets]] in /data.
+   Colour and weight only: an underline here would read as a hyperlink. */
+.mark {
+  font-style: normal;
+  font-weight: 460;
+  color: var(--era-accent);
+  transition: color var(--dur-slow) var(--ease-out);
+}

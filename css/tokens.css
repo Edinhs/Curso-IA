@@ -1,0 +1,102 @@
+/**
+ * Design tokens.
+ *
+ * One dark palette, one accent that the journey re-tints per era, and a fluid
+ * type scale. Nothing else in the CSS declares a raw colour or a raw font size.
+ */
+
+:root {
+  /* Surface — cool, near-black, never pure #000: pure black kills the depth. */
+  --ink-950: #05070a;
+  --ink-900: #070a10;
+  --ink-850: #0a0e16;
+  --ink-800: #0d121b;
+  --ink-700: #141b26;
+
+  --hairline: rgba(226, 236, 248, 0.075);
+  --hairline-strong: rgba(226, 236, 248, 0.16);
+
+  /* Text — four steps is enough hierarchy for an editorial layout. */
+  --text-bright: #f2f6fb;
+  --text: #dde4ee;
+  --text-dim: #93a0b2;
+  --text-faint: #5b6778;
+
+  /* Re-assigned by the progress rail as the reader moves between eras. */
+  --era-accent: #8fa7c4;
+  --warm: #d2a163;
+
+  --focus-ring: color-mix(in srgb, var(--era-accent) 80%, white 20%);
+
+  /* Marker hues. Distinct enough to recognise, close enough to belong. */
+  --marker-concept: #9fb4cd;
+  --marker-engineering: #6fc4bd;
+  --marker-copilot: #d2a163;
+
+  /* Type */
+  --font-sans: 'Inter Variable', 'Inter', 'Segoe UI Variable Text', 'Segoe UI',
+    system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', 'SFMono-Regular',
+    Consolas, 'Liberation Mono', monospace;
+
+  --size-hero: clamp(4.5rem, 18vw, 17rem);
+  --size-year-ghost: clamp(5rem, 13vw, 12rem);
+  --size-display: clamp(2.1rem, 4.4vw, 4rem);
+  --size-title: clamp(1.7rem, 2.9vw, 2.6rem);
+  --size-lead: clamp(1.1rem, 1.45vw, 1.45rem);
+  --size-body: clamp(0.975rem, 1.02vw, 1.0625rem);
+  --size-small: 0.875rem;
+  --size-label: 0.6875rem;
+
+  --leading-tight: 1.04;
+  --leading-snug: 1.26;
+  --leading-body: 1.62;
+
+  --track-label: 0.2em;
+  --track-tight: -0.022em;
+
+  /* Space — a 4px base with a widening step, so the layout breathes. */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1.25rem;
+  --s-5: 2rem;
+  --s-6: 3.25rem;
+  --s-7: 5.25rem;
+  --s-8: 8.5rem;
+
+  --gutter: clamp(1.5rem, 6vw, 7rem);
+  --measure: 46ch;
+  --shell-max: 1680px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0.05, 0.36, 1);
+  --dur-fast: 180ms;
+  --dur-base: 320ms;
+  --dur-slow: 640ms;
+
+  /* Layers */
+  --z-backdrop: 0;
+  --z-journey: 1;
+  --z-rail: 20;
+  --z-topbar: 30;
+  --z-overlay: 40;
+
+  color-scheme: dark;
+}
+
+/* The reader asked for stillness — or the system did. */
+.reduced-motion {
+  --dur-fast: 1ms;
+  --dur-base: 1ms;
+  --dur-slow: 1ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur-base: 1ms;
+    --dur-slow: 1ms;
+  }
+}

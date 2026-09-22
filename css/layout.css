@@ -1,0 +1,330 @@
+/**
+ * The shell and the three kinds of station: the cold open, a beat, the close.
+ *
+ * The backdrop canvas is fixed behind everything and never scrolls. The
+ * document scrolls past it; each station pins its own content with
+ * `position: sticky`, which is what lets the copy hold perfectly still while
+ * the camera travels.
+ */
+
+html { background: var(--ink-950); }
+
+body {
+  background: var(--ink-950);
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+/* Nothing flashes into view before the first frame is composed. */
+.is-booting #journey { opacity: 0; }
+
+#journey {
+  position: relative;
+  z-index: var(--z-journey);
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-backdrop);
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: var(--ink-950);
+}
+
+/* A slow vignette keeps the reading column darker than the frame edges. */
+.backdrop-veil {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-backdrop) + 1);
+  pointer-events: none;
+  background:
+    radial-gradient(120% 78% at 24% 50%, rgba(5, 7, 10, 0.88) 0%, rgba(5, 7, 10, 0.32) 46%, transparent 78%),
+    linear-gradient(to bottom, rgba(5, 7, 10, 0.74) 0%, transparent 22%, transparent 76%, rgba(5, 7, 10, 0.8) 100%);
+}
+
+.no-webgl .backdrop-veil { opacity: 0.8; }
+
+/* ---------------------------------------------------------------- cold open */
+
+.intro {
+  position: relative;
+  height: var(--intro-height, 260vh);
+}
+
+.intro__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  padding: 0 var(--gutter) var(--s-6);
+  opacity: var(--copy-opacity, 1);
+  transform: translate3d(0, var(--copy-shift, 0), 0);
+  will-change: opacity, transform;
+}
+
+.intro__inner {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--s-4);
+  text-align: center;
+}
+
+.intro__mark {
+  /* Tracking is animated as a variable rather than as `letter-spacing`, because
+     the optical centring below has to move with it. */
+  --mark-track: 0.22em;
+  display: grid;
+  justify-items: center;
+  gap: var(--s-3);
+  opacity: 0;
+  filter: blur(14px);
+  letter-spacing: var(--mark-track);
+}
+
+.intro__ai {
+  display: block;
+  font-size: var(--size-hero);
+  font-weight: 200;
+  line-height: 0.86;
+  letter-spacing: inherit;
+  /* Cancels the trailing space that tracking adds after the last letter. */
+  text-indent: var(--mark-track);
+  color: var(--text-bright);
+  text-shadow: 0 0 80px color-mix(in srgb, var(--era-accent) 28%, transparent);
+}
+
+.intro__expanded {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: 0.44em;
+  text-indent: 0.44em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.intro__line {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  filter: blur(8px);
+  color: var(--text-dim);
+}
+
+.intro__line--lg {
+  font-size: var(--size-title);
+  font-weight: 300;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--track-tight);
+  color: var(--text);
+  margin-top: var(--s-5);
+}
+
+.intro__year {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  filter: blur(8px);
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: var(--era-accent);
+  margin-top: var(--s-5);
+}
+
+.intro__line--quote {
+  font-size: var(--size-lead);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-dim);
+}
+
+/* No-GSAP and reduced-motion path: the same end state, without the performance. */
+.intro__mark.is-revealed,
+.intro__line.is-revealed,
+.intro__year.is-revealed,
+.intro__cue.is-revealed {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+.intro__mark.is-revealed { --mark-track: 0.04em; }
+
+.intro__cue {
+  justify-self: center;
+  display: grid;
+  justify-items: center;
+  gap: var(--s-3);
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  color: var(--text-faint);
+}
+
+.intro__cue-icon {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  animation: cue-drift 2.8s var(--ease-in-out) infinite;
+}
+
+@keyframes cue-drift {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  45% { transform: translateY(7px); opacity: 1; }
+}
+
+.reduced-motion .intro__cue-icon { animation: none; }
+
+/* -------------------------------------------------------------------- beats */
+
+.beat {
+  position: relative;
+  height: var(--beat-height, 220vh);
+}
+
+.beat__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: grid;
+  align-items: center;
+}
+
+.beat__inner {
+  position: relative;
+  width: 100%;
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  display: grid;
+  grid-template-columns: minmax(0, 46ch) minmax(0, 44ch);
+  gap: clamp(2rem, 6vw, 7rem);
+  align-items: center;
+  opacity: var(--copy-opacity, 1);
+  transform: translate3d(0, var(--copy-shift, 0), 0);
+  will-change: opacity, transform;
+}
+
+.beat__content {
+  position: relative;
+  display: grid;
+  gap: var(--s-4);
+  align-content: center;
+}
+
+/* The year as a ghost numeral sitting just above the copy — editorial, not
+   decorative: it is the single largest cue that depth is time. Anchored to the
+   column rather than to the viewport, so it can never be clipped by the frame. */
+.beat__year {
+  position: absolute;
+  left: -0.055em;
+  bottom: 100%;
+  margin-bottom: -0.3em;
+  font-size: var(--size-year-ghost);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: var(--track-tight);
+  color: rgba(226, 236, 248, 0.055);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.beat__chapter {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  color: var(--text-faint);
+}
+
+.beat__chapter-number { color: var(--era-accent); }
+
+.beat__chapter-title {
+  text-transform: none;
+  letter-spacing: 0.06em;
+}
+
+.beat__eyebrow {
+  color: var(--text-faint);
+  text-transform: none;
+  letter-spacing: 0.1em;
+}
+
+.beat__title {
+  font-size: var(--size-display);
+  font-weight: 250;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--text-bright);
+  text-wrap: balance;
+}
+
+.beat__lead {
+  font-size: var(--size-lead);
+  font-weight: 300;
+  line-height: var(--leading-snug);
+  color: var(--text-dim);
+  max-width: 38ch;
+  text-wrap: pretty;
+}
+
+.beat__aside {
+  position: relative;
+  align-self: center;
+}
+
+/* -------------------------------------------------------------------- outro */
+
+.outro {
+  position: relative;
+  min-height: var(--outro-height, 180vh);
+  padding: var(--s-8) 0 var(--s-7);
+}
+
+/* The closing list runs the full width, so unlike a beat it has to leave room
+   for the progress rail on the right edge. */
+.outro__stage {
+  width: 100%;
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  padding-left: var(--gutter);
+  padding-right: max(var(--gutter), 8.5rem);
+  display: grid;
+  gap: var(--s-6);
+}
+
+.outro__head { display: grid; gap: var(--s-4); max-width: 62ch; }
+
+.outro__eyebrow { color: var(--era-accent); }
+
+.outro__title {
+  font-size: var(--size-display);
+  font-weight: 250;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--text-bright);
+}
+
+.outro__lead {
+  font-size: var(--size-lead);
+  font-weight: 300;
+  line-height: var(--leading-snug);
+  color: var(--text-dim);
+}
+
+.outro__labs {
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: 0.1em;
+  max-width: 76ch;
+  text-transform: none;
+}
