@@ -56,6 +56,7 @@
 
     AIC.ui.progress.mount(chromeRoot, journey);
     AIC.ui.nav.mount(chromeRoot, journey);
+    AIC.ui.mindmapFlash.mount(chromeRoot);
 
     AIC.ui.intro.bindScrub(intro);
     AIC.ui.beats.bind(beatSections);
@@ -76,15 +77,18 @@
     // A reload part-way through the journey restores the scroll position, and a
     // cold open playing to an empty screen behind the reader is just confusing.
     if ((window.scrollY || 0) < 8) {
+      document.documentElement.classList.add('is-opening');
       AIC.ui.intro.play(intro);
     } else {
       intro.classList.add('is-played');
-      dom.qsa('.intro__mark, .intro__line, .intro__year, .intro__cue', intro)
+      dom.qsa('.intro__point, .intro__axis, .intro__mark, .intro__line, .intro__year, .intro__cue', intro)
         .forEach(function (element) { element.classList.add('is-revealed'); });
     }
 
     document.documentElement.classList.remove('is-booting');
     journey.update();
+
+    AIC.core.debug.mount(chromeRoot, { journey: journey, backdrop: backdrop });
     bus.emit(events.READY, { journey: journey, backdrop: backdrop });
 
     AIC.journey = journey;

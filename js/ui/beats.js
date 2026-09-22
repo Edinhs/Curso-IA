@@ -2,56 +2,109 @@
  * Beat sections.
  *
  * Every screen of the journey is generated from `data/beats.js` — there is no
- * per-beat markup anywhere in index.html. Adding a beat to the array adds a
- * station to the timeline, a marker to the 3D corridor, a segment to the
- * progress rail and a step to the mind map, with no other edit.
+ * per-beat markup anywhere in index.html.
  *
- * Layout: the section is tall, the stage inside it is `position: sticky`, so
- * the copy holds still while the camera travels. Opacity and drift are scrubbed
- * against the section's own scroll progress — text arrives, is held perfectly
- * still and legible for the middle half of the section, then leaves.
+ * ── The station reads in one order ────────────────────────────────────────
+ *   the coordinate arrives alone, at hero scale
+ *   it settles into a label as the source and the question surface
+ *   the three lines resolve in sequence: discovery, concept, consequence
+ *   on departure, the question the station opens is the last thing on screen
+ *
+ * That last move matters more than it looks: a beat's `nextQuestion` is the
+ * next beat's `question`, word for word. The reader watches a question form,
+ * scrolls, and arrives at the station that answers it. The handoff is the
+ * narrative.
+ *
+ * ── How it is driven ──────────────────────────────────────────────────────
+ * Nothing here is a triggered animation. `js/scroll/choreography.js` writes
+ * the five phase values onto the section as custom properties, and the CSS
+ * reads them. Every element is a pure function of scroll position, so
+ * scrolling backwards plays the arrival in reverse instead of stranding the
+ * screen in a state it cannot leave.
+ *
+ * Staggering is done in CSS from `--si` (stagger index) rather than in JS, so
+ * the browser interpolates it on the compositor and the cost per frame is one
+ * custom property write per station.
  */
 (function (AIC) {
   'use strict';
 
   var dom = AIC.core.dom;
   var config = AIC.core.config;
-  var utils = AIC.core.utils;
+
+  /** A line of the narrative, with its place in the reveal sequence. */
+  function narrativeLine(value, variant, staggerIndex) {
+    if (!value) return null;
+    return dom.el('p', {
+      class: 'line line--' + variant + ' stagger',
+      style: '--si:' + staggerIndex,
+      html: AIC.ui.text.inline(value)
+    });
+  }
 
   function buildSection(beat, index) {
     var chapter = AIC.data.getChapter(beat.chapterId);
+    var essential = beat.essential;
     var content = [];
 
-    if (beat.year) {
-      content.push(dom.el('span', { class: 'beat__year', 'aria-hidden': 'true', text: beat.year }));
+    if (beat.coordinate) {
+      // Long coordinates ("1990s", "2012 — 2017") must not outgrow the column.
+      var fit = Math.min(1, 4 / Math.max(beat.coordinate.length, 1)).toFixed(3);
+      content.push(dom.el('span', {
+        class: 'beat__coordinate',
+        'aria-hidden': 'true',
+        style: '--coordinate-fit:' + Math.max(fit, 0.62),
+        text: beat.coordinate
+      }));
     }
 
     content.push(dom.el('p', {
-      class: 'beat__chapter',
+      class: 'beat__meta stagger',
+      style: '--si:0',
       children: [
-        dom.el('span', { class: 'beat__chapter-number', text: chapter ? chapter.number : '—' }),
+        dom.el('span', { class: 'beat__chapter', text: chapter ? chapter.number : '—' }),
         dom.el('span', { class: 'beat__chapter-title', text: chapter ? chapter.title : '' })
       ]
     }));
 
-    content.push(dom.el('p', { class: 'beat__eyebrow', text: beat.eyebrow }));
-    content.push(dom.el('h2', { class: 'beat__title', html: AIC.ui.text.inline(beat.title) }));
-    content.push(dom.el('p', { class: 'beat__lead', html: AIC.ui.text.inline(beat.lead) }));
+    if (beat.source) {
+      content.push(dom.el('p', {
+        class: 'beat__source stagger',
+        style: '--si:1',
+        text: beat.source
+      }));
+    }
 
-    var essential = dom.el('div', { class: 'essential' });
-    essential.appendChild(dom.el('div', {
+    content.push(dom.el('h2', {
+      class: 'beat__question stagger',
+      style: '--si:2',
+      id: 'beat-title-' + beat.id,
+      html: AIC.ui.text.inline(beat.question)
+    }));
+
+    if (beat.term) {
+      content.push(dom.el('p', { class: 'beat__term stagger', style: '--si:3', text: beat.term }));
+    }
+
+    var block = dom.el('div', { class: 'essential stagger', style: '--si:4' });
+    block.appendChild(dom.el('div', {
       class: 'essential__head',
       children: [
-        AIC.ui.markers.create(beat.essential.marker || 'concept'),
+        AIC.ui.markers.create(essential.marker || 'concept'),
         dom.el('span', { class: 'essential__layer', text: 'ESSENTIAL' })
       ]
     }));
-    dom.append(essential, AIC.ui.text.paragraphs(beat.essential.body));
-    content.push(essential);
+    dom.append(block, [
+      narrativeLine(essential.discovery, 'discovery', 5),
+      narrativeLine(essential.concept, 'concept', 6),
+      narrativeLine(essential.connection, 'connection', 7)
+    ]);
+    content.push(block);
 
     if (beat.copilot && beat.copilot.surface === 'inline') {
       content.push(dom.el('aside', {
-        class: 'copilot-note copilot-note--inline',
+        class: 'copilot-note copilot-note--inline stagger',
+        style: '--si:8',
         children: [
           AIC.ui.markers.create('copilot'),
           dom.el('p', { class: 'prose prose--dim', html: AIC.ui.text.inline(beat.copilot.body) })
@@ -60,7 +113,23 @@
     }
 
     var deepDive = AIC.ui.deepDive.create(beat);
-    if (deepDive) content.push(deepDive.toggle);
+    if (deepDive) {
+      deepDive.toggle.classList.add('stagger');
+      deepDive.toggle.style.setProperty('--si', '9');
+      content.push(deepDive.toggle);
+    }
+
+    // The door this station opens. Appears only as the camera leaves, and is
+    // the next station's question verbatim.
+    if (beat.nextQuestion) {
+      content.push(dom.el('p', {
+        class: 'beat__next',
+        children: [
+          dom.el('span', { class: 'beat__next-mark', 'aria-hidden': 'true' }),
+          dom.el('span', { class: 'beat__next-text', text: beat.nextQuestion })
+        ]
+      }));
+    }
 
     var section = dom.el('section', {
       class: 'beat',
@@ -80,8 +149,8 @@
               class: 'beat__inner',
               children: [
                 dom.el('div', { class: 'beat__content', children: content }),
-                // Second column. Empty until the engineering layer is opened —
-                // that negative space is where the corridor shows through.
+                // Second column. Empty until the engineering layer opens —
+                // that negative space is where the construct lives.
                 dom.el('div', {
                   class: 'beat__aside',
                   children: deepDive ? [deepDive.panel] : []
@@ -93,72 +162,57 @@
       ]
     });
 
-    dom.qs('.beat__title', section).id = 'beat-title-' + beat.id;
     if (deepDive) deepDive.setHost(section);
     return section;
   }
 
-  /** Scrubs copy opacity/drift against the section's own progress. */
-  function bindScrub(section) {
-    var inner = dom.qs('.beat__inner', section);
-    var fadeIn = config.scroll.copyIn;
-    var fadeOut = config.scroll.copyOut;
-
-    function apply(progress) {
-      var appear = utils.smoothstep(0, fadeIn, progress);
-      var disappear = 1 - utils.smoothstep(fadeOut, 1, progress);
-      var opacity = appear * disappear;
-      inner.style.setProperty('--copy-opacity', opacity.toFixed(3));
-      inner.style.setProperty('--copy-shift', ((1 - appear) * 34 - (1 - disappear) * 24).toFixed(2) + 'px');
-    }
-
-    if (AIC.core.motion.reduced) {
-      inner.style.setProperty('--copy-opacity', '1');
-      inner.style.setProperty('--copy-shift', '0px');
-      return;
-    }
-
-    if (AIC.core.capabilities.scrollTrigger) {
-      // Hidden until the stage pins. Without this the copy is fully lit while
-      // it is still sliding up from below, which reads as an ordinary web page.
-      apply(0);
-      window.ScrollTrigger.create({
-        trigger: section,
-        start: 'top top',
-        end: 'bottom bottom',
-        onUpdate: function (self) { apply(self.progress); },
-        onLeave: function () { apply(1); },
-        onLeaveBack: function () { apply(0); }
-      });
-    } else {
-      // No GSAP: the copy still appears, driven by visibility instead of scrub.
-      var observer = new window.IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) { apply(entry.isIntersecting ? 0.5 : 0); });
-      }, { rootMargin: '-25% 0px -25% 0px' });
-      observer.observe(section);
-    }
-  }
-
   AIC.ui.beats = {
     render: function (container) {
-      var sections = AIC.data.beats.map(function (beat, index) {
+      return AIC.data.beats.map(function (beat, index) {
         var section = buildSection(beat, index);
         container.appendChild(section);
         return section;
       });
-      return sections;
+    },
+
+    /**
+     * How far the coordinate travels between its hero position and its slot.
+     *
+     * Measured rather than guessed: the copy column is a different height on
+     * every station, so a fixed `em` or `vh` offset lands the hero coordinate
+     * somewhere slightly different each time. One layout read per station per
+     * resize buys an arrival that is centred on all of them.
+     */
+    measure: function (sections) {
+      sections.forEach(function (section) {
+        var coordinate = dom.qs('.beat__coordinate', section);
+        var stage = dom.qs('.beat__stage', section);
+        if (!coordinate || !stage) return;
+
+        // Read the settled position with the hero transform neutralised.
+        section.style.setProperty('--hero-travel', '0px');
+        var box = coordinate.getBoundingClientRect();
+        var frame = stage.getBoundingClientRect();
+        var travel = (frame.top + frame.height * 0.5) - (box.top + box.height * 0.5);
+        section.style.setProperty('--hero-travel', Math.max(travel, 0).toFixed(1) + 'px');
+      });
     },
 
     bind: function (sections) {
-      sections.forEach(bindScrub);
+      var bindings = sections.map(function (section) {
+        return AIC.scroll.choreography.bind(section, section.dataset.beat);
+      });
 
+      AIC.ui.beats.measure(sections);
+      window.addEventListener('resize', AIC.core.utils.debounce(function () {
+        AIC.ui.beats.measure(sections);
+      }, 160), { passive: true });
+
+      // Switching to reduced motion mid-journey must not leave a half-played
+      // station on screen: settle every one of them into its EXPLORE state.
       AIC.core.bus.on(AIC.core.events.MOTION_CHANGE, function (payload) {
         if (!payload.reduced) return;
-        sections.forEach(function (section) {
-          var inner = dom.qs('.beat__inner', section);
-          inner.style.setProperty('--copy-opacity', '1');
-          inner.style.setProperty('--copy-shift', '0px');
-        });
+        bindings.forEach(function (binding) { binding.apply(0.6); });
       });
     }
   };

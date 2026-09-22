@@ -10,8 +10,8 @@
 
 /* Very wide screens: hold the measure, let the margins grow. */
 @media (min-width: 1800px) {
-  :root { --measure: 48ch; }
-  .beat__inner { grid-template-columns: minmax(0, 48ch) minmax(0, 46ch); }
+  :root { --measure: 44ch; }
+  .beat__inner { grid-template-columns: minmax(0, 46ch) minmax(0, 44ch); }
 }
 
 /* Short laptops: 1366×768 is the machine this has to feel good on. */
@@ -24,30 +24,61 @@
 
   .beat__content { gap: var(--s-3); }
   .deepdive__inner { max-height: 76svh; }
-  .beat__year { margin-bottom: -0.22em; }
+  /* Less headroom above the copy: the coordinate grows less on arrival.
+     How far it travels is measured, so only the scale needs adjusting. */
+  .beat__coordinate {
+    margin-bottom: -0.14em;
+    transform:
+      translate3d(0, calc(var(--hero-year, 0) * var(--hero-travel, 20vh)), 0)
+      scale(calc(1 + var(--hero-year, 0) * 0.72));
+  }
 }
 
-/* Tablets and small laptops: one column, engineering layer opens below. */
+/**
+ * Tablets and small laptops: the station stops being pinned.
+ *
+ * A single column of copy is taller than a phone viewport, and a pinned stage
+ * that cannot contain its own content is a broken layout, not a dense one. So
+ * below this width the beat becomes an ordinary tall section scrolling past
+ * the fixed backdrop. The choreography still runs — the copy still arrives in
+ * sequence and leaves on departure — it simply plays against the page's own
+ * scroll instead of against a pin.
+ *
+ * This is the adaptation small screens actually need. Squeezing the desktop
+ * composition into 390px would give neither layout.
+ */
 @media (max-width: 1080px) {
+  .beat { height: auto; }
+
+  .beat__stage {
+    position: static;
+    height: auto;
+    min-height: 100svh;
+    align-content: center;
+    padding-block: 21vh 12vh;
+  }
+
   .beat__inner {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--s-4);
-    max-height: 100svh;
   }
 
   .beat__aside { align-self: start; }
 
-  /* The panel is in flow now, so the pinned stage needs an escape valve.
-     Scroll chaining stays on: reaching the end continues the journey. */
-  .beat.is-deepdive-open .beat__inner {
-    overflow-y: auto;
-    align-content: start;
-    padding-block: calc(var(--s-7) + var(--s-5)) var(--s-6);
+  .deepdive__inner { max-height: none; overflow: visible; }
+  .deepdive__panel.is-scrollable::after { display: none; }
+
+  /* Without a pinned frame there is nowhere for the coordinate to travel to,
+     so it arrives in place: brighter and a little larger, then settling. */
+  .beat__coordinate {
+    margin-bottom: calc(var(--s-3) * -1);
+    transform: scale(calc(1 + var(--hero-year, 0) * 0.34));
   }
 
-  .deepdive__inner { max-height: none; overflow: visible; }
-
-  .beat__year { margin-bottom: -0.2em; }
+  .beat__next {
+    position: static;
+    margin-top: var(--s-5);
+  }
 
   .chapter-row__link { grid-template-columns: 2.75rem minmax(0, 1fr) 8rem; }
   .chapter-row__status { display: none; }
@@ -59,6 +90,8 @@
     --gutter: 1.25rem;
     --measure: 100%;
     --size-lead: 1.0625rem;
+    --size-display: clamp(1.85rem, 8.2vw, 2.4rem);
+    --size-coordinate: clamp(2.25rem, 13vw, 3.4rem);
   }
 
   .topbar { padding: var(--s-3) var(--gutter); }
@@ -86,7 +119,7 @@
   .rail__line {
     inset: auto 0 6px 0;
     height: 1px;
-    background: var(--hairline-strong);
+    background: var(--line-structure);
   }
 
   .rail__cursor {
@@ -94,6 +127,17 @@
     bottom: 4px;
     left: calc(var(--rail-position, 0) * 100%);
     margin: 0;
+  }
+
+  .rail__cursor::before { display: none; }
+
+  .rail__travelled {
+    top: auto;
+    bottom: 6px;
+    left: 0;
+    width: calc(var(--rail-position, 0) * 100%);
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--line-emphasis));
   }
 
   .rail__list { position: relative; inset: auto; height: 0; }
@@ -146,6 +190,11 @@
 
   .mindmap__svg { min-width: 460px; }
   .mindmap { overflow-x: auto; justify-items: start; }
+
+  /* No free half of the frame to surface the branch in, and an overlay across
+     the copy is worse than none. The counter in the bar still ticks, and the
+     full map is one tap away. */
+  .flash { display: none; }
 
   .intro__stage { padding-bottom: var(--s-7); }
 }

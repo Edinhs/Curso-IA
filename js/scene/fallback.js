@@ -5,8 +5,13 @@
  * images, remote desktop sessions and locked-down VMs all hit this path.
  *
  * It is the same idea reduced to its essentials: a pinhole projection of the
- * rails and a sparse dust field. It costs a few hundred `lineTo` calls per
- * frame, which any machine that can render a web page can afford.
+ * rails and a sparse dust field, with the same discipline as the WebGL path —
+ * graphite and white, the era signature only as a trace, and an atmosphere
+ * that thickens as the journey advances. It costs a few hundred canvas calls
+ * per frame, which any machine that can render a web page can afford.
+ *
+ * Constructs are not reproduced here. A wireframe concept drawn without depth
+ * testing would read as clutter; the corridor and the copy carry the story.
  */
 (function (AIC) {
   'use strict';
@@ -49,8 +54,12 @@
     var ratio = 1;
     var travel = 0;
     var targetTravel = 0;
-    var accent = { r: 143, g: 167, b: 196 };
-    var targetAccent = { r: 143, g: 167, b: 196 };
+    // The structural white of the space. The signature only tints it slightly.
+    var BASE = { r: 169, g: 188, b: 210 };
+    var accent = { r: BASE.r, g: BASE.g, b: BASE.b };
+    var targetAccent = { r: BASE.r, g: BASE.g, b: BASE.b };
+    var density = 0.5;
+    var targetDensity = 0.5;
     var frameId = null;
     var running = false;
     var lastTime = 0;
@@ -110,7 +119,7 @@
         // the lens to become a blob, and size is capped either way.
         var fade = (1 - utils.smoothstep(DEPTH * 0.45, DEPTH * 0.95, z)) *
           utils.smoothstep(24, 150, z);
-        var alpha = particle.alpha * fade * 0.85;
+        var alpha = particle.alpha * fade * 0.85 * density;
         if (alpha < 0.012) continue;
 
         var radius = Math.min(Math.max(0.5, point.scale * 0.9), 2.4);
@@ -123,7 +132,7 @@
 
     function draw() {
       if (!width || !height) return;
-      ctx.fillStyle = '#05070a';
+      ctx.fillStyle = '#06080d';
       ctx.fillRect(0, 0, width, height);
       drawRails();
       drawDust();
@@ -136,6 +145,7 @@
 
       var damping = utils.damp(0.06, delta);
       travel = utils.lerp(travel, targetTravel, damping);
+      density = utils.lerp(density, targetDensity, damping);
       accent.r = utils.lerp(accent.r, targetAccent.r, damping);
       accent.g = utils.lerp(accent.g, targetAccent.g, damping);
       accent.b = utils.lerp(accent.b, targetAccent.b, damping);
@@ -161,16 +171,24 @@
 
     bus.on(events.JOURNEY_PROGRESS, function (payload) {
       targetTravel = payload.progress * DEPTH * 2.4;
-      if (!running) { travel = targetTravel; draw(); }
+      // The universe fills in as the journey advances, exactly as in WebGL.
+      targetDensity = 0.5 + payload.progress * 0.5;
+      if (!running) { travel = targetTravel; density = targetDensity; draw(); }
     });
 
     bus.on(events.ERA_CHANGE, function (payload) {
       var era = AIC.data.getEra(payload.eraId);
       if (!era) return;
-      targetAccent = {
+      // A trace of the signature, never a wash: 18% toward the era tint.
+      var tint = {
         r: parseInt(era.accent.slice(1, 3), 16),
         g: parseInt(era.accent.slice(3, 5), 16),
         b: parseInt(era.accent.slice(5, 7), 16)
+      };
+      targetAccent = {
+        r: utils.lerp(BASE.r, tint.r, 0.18),
+        g: utils.lerp(BASE.g, tint.g, 0.18),
+        b: utils.lerp(BASE.b, tint.b, 0.18)
       };
       if (!running) { accent = targetAccent; draw(); }
     });

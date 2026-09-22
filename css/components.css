@@ -55,7 +55,7 @@
   order: 1;
   flex: 1;
   height: 1px;
-  background: var(--hairline);
+  background: var(--line-hairline);
 }
 
 .essential__layer {
@@ -72,7 +72,7 @@
   gap: var(--s-3);
   padding: var(--s-2) var(--s-3) var(--s-2) 0;
   color: var(--text-dim);
-  transition: color var(--dur-fast) var(--ease-out);
+  transition: color var(--dur-instant) var(--ease-out);
 }
 
 .deepdive__toggle:hover { color: var(--text-bright); }
@@ -90,10 +90,38 @@
 
 .deepdive__toggle[aria-expanded='true'] .deepdive__chevron { transform: rotate(90deg); }
 
+/**
+ * The technical layer.
+ *
+ * It arrives from the edge of the frame rather than unfolding in place, and
+ * the narrative beside it steps back instead of disappearing. The reader never
+ * loses the concept they opened it from.
+ */
+.deepdive__panel:focus { outline: none; }
+
+.deepdive__panel:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+
 .deepdive__panel {
   position: relative;
-  overflow: hidden;
-  border-left: 1px solid var(--hairline-strong);
+  border-left: var(--border-structure);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--ink-950) 62%, transparent),
+    transparent 62%
+  );
+}
+
+/* The narrative steps back — dimmed and displaced, never hidden. */
+.beat.is-deepdive-open .beat__content {
+  opacity: 0.55;
+  transform: translate3d(-2.2%, calc((1 - var(--reveal, 1)) * 2.4vh), 0);
+}
+
+.beat__content {
+  transition: opacity var(--dur-long) var(--ease-out);
 }
 
 .deepdive__inner {
@@ -104,7 +132,7 @@
   overflow-y: auto;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
-  scrollbar-color: var(--hairline-strong) transparent;
+  scrollbar-color: var(--line-structure) transparent;
 }
 
 /* Long deep dives scroll. Say so, instead of ending on a sliced line. */
@@ -236,10 +264,10 @@
   display: grid;
   gap: var(--s-2);
   padding: var(--s-4);
-  border: 1px dashed var(--hairline-strong);
+  border: 1px dashed var(--line-structure);
 }
 
-.lab__tag { color: var(--era-accent); }
+.lab__tag { color: var(--signature); }
 
 .lab__name {
   font-family: var(--font-mono);
@@ -251,6 +279,26 @@
   font-size: var(--size-small);
   color: var(--text-faint);
   line-height: 1.5;
+}
+
+/**
+ * The cold open owns the screen.
+ *
+ * No bar, no rail, no controls until the opening has played. Starting on
+ * chrome would say "website"; starting on a point in the dark says the other
+ * thing. Everything fades in together once the reader is oriented.
+ */
+.is-opening .topbar,
+.is-opening .rail {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The slowest transition in the interface, because it is the moment the
+   experience hands the reader the controls. */
+.topbar,
+.rail {
+  transition: opacity var(--dur-cinematic) var(--ease-out);
 }
 
 /* --------------------------------------------------------------- top bar */
@@ -275,7 +323,7 @@
 /* Once the journey starts, real copy scrolls underneath. The bar stops being
    a gradient and becomes a surface, or the two sets of text collide. */
 .is-journeying .topbar {
-  border-bottom-color: var(--hairline);
+  border-bottom-color: var(--line-hairline);
   background: linear-gradient(
     to bottom,
     rgba(5, 7, 10, 0.97) 0%,
@@ -292,7 +340,7 @@
   width: 100%;
   transform: scaleX(var(--doc-progress, 0));
   transform-origin: left;
-  background: var(--era-accent);
+  background: var(--signature);
   opacity: 0.75;
 }
 
@@ -303,7 +351,10 @@
   min-width: 0;
 }
 
-.topbar__client { color: var(--text); }
+.topbar__client {
+  color: var(--text);
+  font-size: var(--size-label-lg);
+}
 
 .topbar__course {
   font-size: var(--size-small);
@@ -320,6 +371,7 @@
 }
 
 .topbar__action {
+  border-radius: var(--radius-control);
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -327,14 +379,14 @@
   font-size: var(--size-small);
   color: var(--text-dim);
   border: 1px solid transparent;
-  transition: color var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out);
+  transition: color var(--dur-instant) var(--ease-out),
+              border-color var(--dur-instant) var(--ease-out);
 }
 
 .topbar__action:hover,
 .topbar__action[aria-pressed='true'] {
   color: var(--text-bright);
-  border-color: var(--hairline-strong);
+  border-color: var(--line-structure);
 }
 
 .topbar__action .icon {
@@ -348,7 +400,7 @@
 }
 
 .topbar__count {
-  color: var(--era-accent);
+  color: var(--signature);
   font-variant-numeric: tabular-nums;
 }
 
@@ -372,7 +424,7 @@
   z-index: var(--z-rail);
   transform: translateY(-50%);
   --rail-height: min(52vh, 460px);
-  --rail-accent: var(--era-accent);
+  --rail-accent: var(--signature);
 }
 
 .rail__track {
@@ -387,24 +439,48 @@
   background: linear-gradient(
     to bottom,
     transparent,
-    var(--hairline-strong) 8%,
-    var(--hairline-strong) 92%,
+    var(--line-structure) 8%,
+    var(--line-structure) 92%,
     transparent
   );
 }
 
+/* The distance covered, drawn as the brighter part of the line. A reading of
+   position in a journey, not a percentage of a course. */
+.rail__travelled {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: calc(var(--rail-position, 0) * 100%);
+  background: linear-gradient(to bottom, transparent, var(--line-emphasis));
+}
+
+/* A dot on a tick: an instrument reading, not a slider handle. */
 .rail__cursor {
   position: absolute;
   left: 50%;
   top: calc(var(--rail-position, 0) * 100%);
-  width: 5px;
-  height: 5px;
-  margin-left: -2px;
+  width: 4px;
+  height: 4px;
+  margin-left: -1.5px;
   margin-top: -2px;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   background: var(--rail-accent);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--rail-accent) 70%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--rail-accent) 80%, transparent),
+              0 0 26px var(--signature-faint);
   transition: background var(--dur-slow) var(--ease-out);
+}
+
+.rail__cursor::before {
+  content: '';
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  width: 12px;
+  height: 1px;
+  background: var(--rail-accent);
+  opacity: 0.55;
 }
 
 .rail__list {
@@ -432,7 +508,7 @@
   order: 2;
   width: 9px;
   height: 1px;
-  background: var(--hairline-strong);
+  background: var(--line-structure);
   transition: width var(--dur-base) var(--ease-out),
               background var(--dur-base) var(--ease-out);
 }
@@ -463,6 +539,7 @@
 /* --------------------------------------------------------- advance button */
 
 .advance {
+  border-radius: var(--radius-control);
   position: fixed;
   right: clamp(1rem, 2.4vw, 2.75rem);
   bottom: clamp(1.25rem, 3vh, 2.5rem);
@@ -472,12 +549,12 @@
   gap: var(--s-2);
   padding: var(--s-2) var(--s-3);
   color: var(--text-faint);
-  border: 1px solid var(--hairline);
+  border: var(--border-hairline);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--dur-base) var(--ease-out),
-              color var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out);
+              color var(--dur-short) var(--ease-out),
+              border-color var(--dur-short) var(--ease-out);
 }
 
 .is-journeying .advance { opacity: 1; pointer-events: auto; }
@@ -485,7 +562,7 @@
 
 .advance:hover {
   color: var(--text-bright);
-  border-color: var(--hairline-strong);
+  border-color: var(--line-structure);
 }
 
 .advance__icon {
@@ -515,8 +592,10 @@
   background: rgba(4, 6, 9, 0.82);
   backdrop-filter: blur(9px);
   opacity: 0;
-  transition: opacity var(--dur-base) var(--ease-out);
+  transition: opacity var(--dur-base) var(--ease-in);
 }
+
+.overlay.is-open .overlay__scrim { transition-timing-function: var(--ease-out); }
 
 .overlay.is-open .overlay__scrim { opacity: 1; }
 
@@ -528,8 +607,8 @@
   grid-template-rows: auto minmax(0, 1fr);
   gap: var(--s-5);
   padding: var(--s-5) clamp(1.25rem, 3vw, 2.75rem) var(--s-5);
-  background: linear-gradient(to bottom, var(--ink-850), var(--ink-950));
-  border: 1px solid var(--hairline);
+  background: linear-gradient(to bottom, var(--ink-850), var(--ink-900));
+  border: var(--border-hairline);
   opacity: 0;
   transform: translate3d(0, 14px, 0);
   transition: opacity var(--dur-base) var(--ease-out),
@@ -544,10 +623,10 @@
   justify-content: space-between;
   gap: var(--s-4);
   padding-bottom: var(--s-4);
-  border-bottom: 1px solid var(--hairline);
+  border-bottom: var(--border-hairline);
 }
 
-.overlay__eyebrow { color: var(--era-accent); }
+.overlay__eyebrow { color: var(--signature); }
 
 .overlay__title {
   font-size: var(--size-title);
@@ -558,18 +637,19 @@
 }
 
 .overlay__close {
+  border-radius: var(--radius-control);
   flex: none;
   display: grid;
   place-items: center;
   width: 36px;
   height: 36px;
   color: var(--text-dim);
-  border: 1px solid var(--hairline);
-  transition: color var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out);
+  border: var(--border-hairline);
+  transition: color var(--dur-instant) var(--ease-out),
+              border-color var(--dur-instant) var(--ease-out);
 }
 
-.overlay__close:hover { color: var(--text-bright); border-color: var(--hairline-strong); }
+.overlay__close:hover { color: var(--text-bright); border-color: var(--line-structure); }
 
 .overlay__close .icon {
   width: 14px;
@@ -593,10 +673,10 @@
 .chapter-list { display: grid; }
 
 .chapter-row {
-  --row-accent: var(--era-accent);
-  border-top: 1px solid var(--hairline);
+  --row-accent: var(--signature);
+  border-top: var(--border-hairline);
 }
-.chapter-row:last-child { border-bottom: 1px solid var(--hairline); }
+.chapter-row:last-child { border-bottom: var(--border-hairline); }
 
 .chapter-row__link {
   display: grid;
@@ -606,7 +686,7 @@
   width: 100%;
   padding: var(--s-4) 0;
   text-align: left;
-  transition: background var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-short) var(--ease-out);
 }
 
 .chapter-list--compact .chapter-row__link {
@@ -626,7 +706,7 @@
   color: var(--text-dim);
   font-size: var(--size-body);
   line-height: 1.35;
-  transition: color var(--dur-fast) var(--ease-out);
+  transition: color var(--dur-instant) var(--ease-out);
 }
 
 .chapter-row__summary {
@@ -637,6 +717,10 @@
 
 .chapter-row__era,
 .chapter-row__status { color: var(--text-faint); }
+
+/* Reserved chapters: present, legible, and plainly not yet available. */
+.chapter-row:not(.chapter-row--available) .chapter-row__summary,
+.chapter-row:not(.chapter-row--available) .chapter-row__status { color: var(--text-ghost); }
 
 .chapter-row--available .chapter-row__number,
 .chapter-row--available .chapter-row__era { color: var(--row-accent); }
@@ -660,9 +744,9 @@
 }
 
 .mindmap__link {
-  --node-accent: var(--era-accent);
+  --node-accent: var(--signature);
   fill: none;
-  stroke: var(--hairline-strong);
+  stroke: var(--line-structure);
   stroke-width: 1;
   stroke-dasharray: 3 5;
   transition: stroke var(--dur-slow) var(--ease-out),
@@ -674,7 +758,7 @@
   stroke-dasharray: none;
 }
 
-.mindmap__node { --node-accent: var(--era-accent); }
+.mindmap__node { --node-accent: var(--signature); }
 
 .mindmap__halo {
   fill: color-mix(in srgb, var(--node-accent) 16%, transparent);
@@ -684,7 +768,7 @@
 
 .mindmap__ring {
   fill: var(--ink-950);
-  stroke: var(--hairline-strong);
+  stroke: var(--line-structure);
   stroke-width: 1;
   transition: stroke var(--dur-slow) var(--ease-out);
 }
@@ -741,11 +825,11 @@
   z-index: calc(var(--z-overlay) + 1);
   padding: var(--s-2) var(--s-4);
   background: var(--ink-800);
-  border: 1px solid var(--era-accent);
+  border: 1px solid var(--signature);
   color: var(--text-bright);
   font-size: var(--size-small);
   transform: translateY(-160%);
-  transition: transform var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-short) var(--ease-out);
 }
 
 .skip-link:focus-visible { transform: none; }
@@ -780,7 +864,7 @@
   font-size: var(--size-label);
   letter-spacing: var(--track-label);
   text-transform: uppercase;
-  color: var(--era-accent);
+  color: var(--signature);
 }
 
 .glossary { display: grid; }
@@ -790,7 +874,7 @@
   grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
   gap: var(--s-4);
   padding: var(--s-3) 0;
-  border-top: 1px solid var(--hairline);
+  border-top: var(--border-hairline);
 }
 
 .glossary__term {
@@ -816,3 +900,104 @@
 @media (max-width: 720px) {
   .glossary__row { grid-template-columns: minmax(0, 1fr); gap: var(--s-1); }
 }
+
+/* ------------------------------------------------------------ mind-map flash */
+
+/**
+ * The branch that just grew.
+ *
+ * It surfaces in the space beside the copy — the same half of the frame the
+ * construct occupies — because the model being built belongs to the world, not
+ * to the text. It holds for a few seconds and leaves. Nothing here is
+ * permanent chrome: the reader is shown the structure growing, not given a
+ * panel to manage.
+ */
+.flash {
+  position: fixed;
+  left: 52%;
+  bottom: clamp(1.5rem, 6vh, 4rem);
+  z-index: var(--z-flash);
+  display: grid;
+  gap: var(--s-3);
+  padding-left: var(--s-4);
+  border-left: var(--border-structure);
+  pointer-events: none;
+}
+
+.flash__label {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.flash__branch { display: grid; gap: var(--s-2); }
+
+.flash__node {
+  --node-signature: var(--signature);
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  /* Each generation steps right — the lineage is the shape. */
+  padding-left: calc(var(--branch-depth, 0) * 0.9rem);
+  font-size: var(--size-small);
+  color: var(--text-dim);
+}
+
+.flash__mark {
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-round);
+  border: 1px solid var(--line-emphasis);
+}
+
+.flash__node.is-new {
+  color: var(--text-bright);
+}
+
+.flash__node.is-new .flash__mark {
+  border-color: var(--node-signature);
+  background: var(--node-signature);
+  box-shadow: 0 0 12px var(--node-signature);
+}
+
+@media (max-width: 1080px) {
+  .flash { left: var(--gutter); right: var(--gutter); bottom: 4.5rem; }
+}
+
+@media (max-width: 720px) {
+  .flash__label { font-size: 0.625rem; }
+}
+
+/* ------------------------------------------------------------------- debug */
+
+/* Only ever rendered behind `?debug=true`. See js/core/debug.js. */
+.debug {
+  position: fixed;
+  left: var(--s-3);
+  bottom: var(--s-3);
+  z-index: var(--z-debug);
+  display: grid;
+  gap: 1px;
+  padding: var(--s-3) var(--s-4);
+  background: rgba(4, 6, 10, 0.86);
+  border: var(--border-structure);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.debug__row {
+  display: grid;
+  grid-template-columns: 5.5rem auto;
+  gap: var(--s-3);
+}
+
+.debug__key { color: var(--text-faint); }
+.debug__value { color: var(--signature); font-variant-numeric: tabular-nums; }
+
+/* The branch reveal would sit on top of the readout. */
+.is-debugging .flash { bottom: 12rem; }

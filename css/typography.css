@@ -35,16 +35,20 @@ body {
   font-size: var(--size-body);
   line-height: var(--leading-body);
   font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
   font-feature-settings: 'cv05' 1, 'ss03' 1;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* The mono voice: every label, tag, year and technical caption. */
+/* TECHNICAL — the mono voice: labels, sources, terms, parameters, counts.
+   Used for the things an engineer would expect to see set as data. Never for
+   prose: monospace paragraphs read as code, and this is not code. */
 .mono,
-.beat__eyebrow,
-.beat__chapter,
+.beat__meta,
+.beat__source,
+.beat__term,
 .marker__label,
 .essential__layer,
 .rail__label,
@@ -84,6 +88,6 @@ body {
 .mark {
   font-style: normal;
   font-weight: 460;
-  color: var(--era-accent);
+  color: var(--signature);
   transition: color var(--dur-slow) var(--ease-out);
 }

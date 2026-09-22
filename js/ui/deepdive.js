@@ -15,9 +15,17 @@
  *   });
  *
  * It returns the toggle and the panel *separately*, because they do not live
- * in the same place: on a wide screen the panel unfolds into a second column
+ * in the same place: on a wide screen the panel arrives in the second column
  * beside the story instead of pushing the copy past the bottom of the pinned
  * stage. The caller decides where each one goes.
+ *
+ * ── What opening it does ──────────────────────────────────────────────────
+ * Not a modal. The composition moves:
+ *   the technical layer slides in laterally from the edge of the frame
+ *   the narrative beside it steps back and dims, but stays readable
+ *   the camera dollies sideways so the construct is displaced, not covered
+ *   the diagram resolves top to bottom, leading the eye down it
+ * Closing reverses all four and returns to the narrative.
  *
  * Accessibility: a real <button> with aria-expanded and aria-controls, panel
  * hidden with the `hidden` attribute so it leaves the tab order when closed.
@@ -105,6 +113,11 @@
       var panel = dom.el('div', {
         id: panelId,
         class: 'deepdive__panel',
+        // Focusable as a region so opening it moves the reader into the
+        // technical layer — which is also what makes Escape reach it.
+        tabindex: '-1',
+        role: 'group',
+        'aria-label': 'Camada de engenharia',
         hidden: 'hidden',
         children: [dom.el('div', { class: 'deepdive__inner', children: panelContent })]
       });
@@ -142,17 +155,32 @@
             slot.innerHTML = '';
             AIC.core.registry.mount(slot.dataset.lab, slot, { beat: beat });
           }
-          AIC.ui.animate.expand(panel);
-          window.setTimeout(afterOpen, AIC.core.motion.reduced ? 0 : 460);
+          AIC.ui.animate.slideIn(panel, dom.qsa('.deepdive__inner > *', panel));
+          // preventScroll: the page is a scroll-driven journey, and moving
+          // focus must never move the camera.
+          panel.focus({ preventScroll: true });
+          window.setTimeout(afterOpen, AIC.core.motion.reduced ? 0 : 520);
         } else {
           panel.classList.remove('is-scrollable');
-          AIC.ui.animate.collapse(panel, function () { panel.hidden = true; });
+          AIC.ui.animate.slideOut(panel, function () { panel.hidden = true; });
         }
 
         bus.emit(events.DEEPDIVE_TOGGLE, { beatId: beat.id, open: open });
       }
 
       toggle.addEventListener('click', function () { setOpen(!open); });
+
+      // Escape returns to the narrative, from anywhere inside the layer or
+      // from the toggle itself. Scoped to this beat so an overlay opened on
+      // top still gets the key first.
+      function onEscape(event) {
+        if (event.key !== 'Escape' || !open) return;
+        event.stopPropagation();
+        setOpen(false);
+        toggle.focus();
+      }
+      panel.addEventListener('keydown', onEscape);
+      toggle.addEventListener('keydown', onEscape);
 
       return {
         toggle: toggle,

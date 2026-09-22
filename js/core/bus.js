@@ -39,6 +39,7 @@
     JOURNEY_PROGRESS: 'journey:progress',
     BEAT_ENTER: 'beat:enter',
     STATION_CHANGE: 'station:change',
+    STATION_PHASE: 'station:phase',
     ERA_CHANGE: 'era:change',
     MINDMAP_GROW: 'mindmap:grow',
     DEEPDIVE_TOGGLE: 'deepdive:toggle',

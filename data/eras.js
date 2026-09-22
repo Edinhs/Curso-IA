@@ -1,10 +1,18 @@
 /**
  * The six movements of the journey.
  *
- * An era drives three things at once: the label in the progress rail, the
- * colour temperature of the 3D corridor, and the grouping of chapters. The
- * arc runs cold (a mathematical question) → warm (generative breakthrough) →
- * cool and structured (agents), which is why the hues are not a rainbow.
+ * An era is a movement of the journey: a label in the progress rail, a
+ * *signature* tint, and a slice of the timeline.
+ *
+ * The signatures sit inside a deliberately narrow band — six low-saturation
+ * tints at the same lightness, not six colours. The identity has to stay one
+ * identity across twelve chapters. GENERATIVE is the single warm signature,
+ * and that break is doing narrative work: it marks the point where machines
+ * stopped classifying and started producing.
+ *
+ * The signature is never washed over the whole scene. It reaches the active
+ * concept, the position marker and the highlighted terms; the space itself
+ * stays graphite and white.
  *
  * `span` is the slice of the timeline (0..1) this era occupies, authored
  * alongside the `depth` values in data/beats.js. The progress rail draws the
@@ -22,7 +30,7 @@
       label: 'ORIGINS',
       title: 'A pergunta',
       caption: 'De uma pergunta filosófica a um campo de pesquisa.',
-      accent: '#8FA7C4'
+      accent: '#8FA6BE'
     },
     {
       id: 'learning',
@@ -30,7 +38,7 @@
       label: 'LEARNING',
       title: 'O aprendizado',
       caption: 'Máquinas deixam de seguir regras e passam a derivá-las.',
-      accent: '#74A9C9'
+      accent: '#87A8B8'
     },
     {
       id: 'language',
@@ -38,7 +46,7 @@
       label: 'LANGUAGE',
       title: 'A linguagem',
       caption: 'Atenção, tokens e vetores transformam texto em cálculo.',
-      accent: '#5FC0C0'
+      accent: '#84AAAE'
     },
     {
       id: 'generative',
@@ -46,7 +54,7 @@
       label: 'GENERATIVE AI',
       title: 'A geração',
       caption: 'O modelo deixa de classificar e passa a produzir.',
-      accent: '#D2A163'
+      accent: '#BCA98C'
     },
     {
       id: 'copilot',
@@ -54,7 +62,7 @@
       label: 'COPILOT',
       title: 'O copiloto',
       caption: 'A IA entra no fluxo de trabalho corporativo.',
-      accent: '#8D9BE6'
+      accent: '#95A0BE'
     },
     {
       id: 'agents',
@@ -62,7 +70,7 @@
       label: 'AGENTS',
       title: 'A autonomia',
       caption: 'Do assistente que responde ao agente que executa.',
-      accent: '#A88CDD'
+      accent: '#A198BC'
     }
   ];
 

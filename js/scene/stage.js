@@ -1,16 +1,24 @@
 /**
  * The journey stage — where scroll becomes camera movement.
  *
- * Composition: the copy lives in a column on the left, so the camera steps
- * sideways and the corridor resolves to the right of the text. On narrow
- * screens the corridor re-centres and sits behind the copy instead.
+ * ── Camera language ───────────────────────────────────────────────────────
+ * Travelling and dolly. Nothing else. The camera advances along the path,
+ * looks slightly ahead so curves read as banking, and steps sideways when the
+ * engineering layer claims the right half of the frame. No spins, no zooms, no
+ * roll beyond a whisper. The camera is exploring, not performing.
  *
- * Motion discipline:
- *   · the camera eases toward the scroll position rather than snapping to it,
- *     which removes the jitter of a trackpad without adding lag you can feel
- *   · it looks slightly *ahead* on the path, so turns read as banking
- *   · with reduced motion the loop never starts: the scene renders one frame
- *     per scroll update and is otherwise perfectly still
+ * It eases toward the scroll position rather than snapping to it, which
+ * removes trackpad jitter without introducing lag the reader can feel. Fast
+ * scrolling stays readable because the easing is a follow, not a delay: the
+ * camera is always heading where the scroll already is.
+ *
+ * ── Light ─────────────────────────────────────────────────────────────────
+ * The space itself is graphite and white. The era signature reaches the fog
+ * as a trace and the constructs as their own tint — it is never washed over
+ * the whole frame. Colour that is everywhere is not a signal.
+ *
+ * ── Density ───────────────────────────────────────────────────────────────
+ * The atmosphere thickens as the journey advances. 1950 is nearly vacuum.
  */
 (function (AIC) {
   'use strict';
@@ -27,24 +35,21 @@
 
     var dust = context.add(AIC.scene.layers.createDust(three));
     var corridor = context.add(AIC.scene.layers.createCorridor(three));
-    var nodes = context.add(AIC.scene.layers.createNodes(three, AIC.data.beats));
+    var knowledge = context.add(AIC.scene.layers.createKnowledge(three, AIC.data.beats));
 
     var targetProgress = 0;
     var easedProgress = 0;
     var pointer = { targetX: 0, targetY: 0, x: 0, y: 0 };
 
-    var tone = new three.Color(0x8fa7c4);
-    var targetTone = new three.Color(0x8fa7c4);
-    var fogTone = new three.Color(0x05070a);
+    var structure = new three.Color(config.lighting.structure);
+    var signature = new three.Color(config.lighting.structure);
+    var targetSignature = new three.Color(config.lighting.structure);
+    var fogTone = new three.Color();
 
     var here = new three.Vector3();
     var ahead = new three.Vector3();
 
-    /**
-     * Drops when the engineering layer is open. The panel unfolds over the
-     * right half of the frame, exactly where the corridor lives, so the
-     * backdrop steps back instead of competing with the diagram.
-     */
+    /** Falls when the engineering layer opens; also pushes the camera aside. */
     var attention = 1;
     var targetAttention = 1;
 
@@ -58,7 +63,12 @@
       path.offsetAt(t, here);
       path.offsetAt(Math.min(t + 0.05, 1.15), ahead);
 
-      var shift = compositionShift();
+      // The dolly: as the technical layer slides in from the right, the camera
+      // steps left so the construct is displaced rather than covered.
+      var dolly = (1 - attention) * config.stage.deepDiveDolly *
+        (AIC.core.capabilities.compact ? 0 : 1);
+      var shift = compositionShift() - dolly;
+
       context.camera.position.set(
         here.x + shift + pointer.x,
         here.y + pointer.y,
@@ -67,7 +77,7 @@
       context.camera.lookAt(ahead.x + shift * 0.5, ahead.y, path.zAt(t + 0.05));
 
       // A whisper of roll in the direction of the turn. Any more is nauseating.
-      var bank = (ahead.x - here.x) * 0.012;
+      var bank = (ahead.x - here.x) * 0.009;
       context.camera.rotation.z = utils.lerp(context.camera.rotation.z, bank, damping);
     }
 
@@ -83,19 +93,27 @@
         pointer.y = utils.lerp(pointer.y, pointer.targetY, pointerDamping);
       }
 
-      placeCamera(easedProgress, damping);
-
-      tone.lerp(targetTone, reduced ? 1 : utils.damp(0.05, frame.delta));
       attention = reduced
         ? targetAttention
-        : utils.lerp(attention, targetAttention, utils.damp(0.14, frame.delta));
+        : utils.lerp(attention, targetAttention, utils.damp(0.12, frame.delta));
 
-      dust.setTone(tone, 0.85 * attention);
-      corridor.setTone(tone, 0.38 * attention);
-      nodes.setTone(tone, attention);
+      placeCamera(easedProgress, damping);
 
-      // The fog carries a trace of the era colour so depth feels lit, not black.
-      fogTone.setRGB(0.02, 0.027, 0.039).lerp(tone, 0.07);
+      signature.lerp(targetSignature, reduced ? 1 : utils.damp(0.04, frame.delta));
+
+      // The universe fills in as the journey advances: vacuum, then atmosphere.
+      var density = 0.5 + easedProgress * 0.5;
+      // On a single-column layout the copy sits over the construct rather than
+      // beside it, so the whole space steps back to keep the text first.
+      var weight = AIC.core.capabilities.compact ? 0.5 : 1;
+
+      dust.setTone(structure, 0.72 * density * attention * weight);
+      corridor.setTone(structure, 0.3 * attention * weight);
+      knowledge.setAttention(attention * weight);
+
+      // Only a trace of the signature reaches the fog — enough that depth
+      // feels lit rather than black, never enough to tint the frame.
+      fogTone.copy(structure).multiplyScalar(0.02).lerp(signature, config.lighting.fogSignature);
       context.scene.fog.color.copy(fogTone);
       context.renderer.setClearColor(fogTone, 1);
     });
@@ -111,12 +129,12 @@
 
     bus.on(events.ERA_CHANGE, function (payload) {
       var era = AIC.data.getEra(payload.eraId);
-      if (era) targetTone.set(era.accent);
+      if (era) targetSignature.set(era.accent);
       renderIfStill();
     });
 
     bus.on(events.DEEPDIVE_TOGGLE, function (payload) {
-      targetAttention = payload.open ? 0.3 : 1;
+      targetAttention = payload.open ? 0.26 : 1;
       renderIfStill();
     });
 
@@ -140,6 +158,15 @@
 
     return {
       context: context,
+
+      /** Read by the debug overlay. */
+      get telemetry() {
+        return {
+          progress: easedProgress,
+          cameraZ: context.camera.position.z,
+          attention: attention
+        };
+      },
 
       start: function () {
         if (AIC.core.motion.reduced) context.renderOnce();

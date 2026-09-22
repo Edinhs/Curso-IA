@@ -1,61 +1,103 @@
 /**
  * Design tokens.
  *
- * One dark palette, one accent that the journey re-tints per era, and a fluid
- * type scale. Nothing else in the CSS declares a raw colour or a raw font size.
+ * ── Colour ────────────────────────────────────────────────────────────────
+ * The universe is graphite and white. Colour is not decoration here: it is
+ * reserved for the small number of things that carry meaning — the active
+ * concept, a highlighted term, the position marker. Everything structural is
+ * a neutral line at low alpha.
+ *
+ * Each era has a *signature*, not a colour scheme: six low-saturation tints
+ * within a deliberately narrow band, all at the same lightness. GENERATIVE is
+ * the single warm one, and that break is the point — it marks where machines
+ * stopped classifying and started producing.
+ *
+ * ── Lines ─────────────────────────────────────────────────────────────────
+ * One vocabulary, used the same way in CSS and in WebGL:
+ *   continuous  → evolution   (the time axis, a concept's own structure)
+ *   dashed      → relation    (a link to something not yet reached)
+ *   pulse       → flow        (data moving)
+ *   temporary   → attention   (a weight that exists only while it is relevant)
+ *
+ * ── Motion ────────────────────────────────────────────────────────────────
+ * Six durations, three easings, one stagger. No component invents its own.
+ * The JS mirror lives in `js/core/config.js` under `motion`, so GSAP and CSS
+ * animate on the same numbers.
  */
 
 :root {
-  /* Surface — cool, near-black, never pure #000: pure black kills the depth. */
-  --ink-950: #05070a;
-  --ink-900: #070a10;
-  --ink-850: #0a0e16;
-  --ink-800: #0d121b;
-  --ink-700: #141b26;
+  /* ── Surface ──────────────────────────────────────────────────────────── */
+  /* Never pure black: pure black has no depth to recede into. */
+  --ink-950: #06080d;
+  --ink-900: #090c12;
+  --ink-850: #0c1017;
+  --ink-800: #11151d;
 
-  --hairline: rgba(226, 236, 248, 0.075);
-  --hairline-strong: rgba(226, 236, 248, 0.16);
+  /* ── Line vocabulary ──────────────────────────────────────────────────── */
+  --line-hairline: rgba(226, 236, 248, 0.07);
+  --line-structure: rgba(226, 236, 248, 0.13);
+  --line-emphasis: rgba(226, 236, 248, 0.22);
 
-  /* Text — four steps is enough hierarchy for an editorial layout. */
-  --text-bright: #f2f6fb;
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --text-bright: #f4f7fb;
   --text: #dde4ee;
-  --text-dim: #93a0b2;
-  --text-faint: #5b6778;
+  --text-dim: #949fb0;
+  --text-faint: #5f6a79;
+  --text-ghost: #39414d;
 
-  /* Re-assigned by the progress rail as the reader moves between eras. */
-  --era-accent: #8fa7c4;
-  --warm: #d2a163;
+  /* ── Signature ────────────────────────────────────────────────────────── */
+  /* Re-assigned per era by the progress rail. The default is ORIGINS. */
+  --signature: #8fa6be;
+  --signature-soft: color-mix(in srgb, var(--signature) 26%, transparent);
+  --signature-faint: color-mix(in srgb, var(--signature) 12%, transparent);
 
-  --focus-ring: color-mix(in srgb, var(--era-accent) 80%, white 20%);
+  --focus-ring: color-mix(in srgb, var(--signature) 70%, white 30%);
 
-  /* Marker hues. Distinct enough to recognise, close enough to belong. */
-  --marker-concept: #9fb4cd;
-  --marker-engineering: #6fc4bd;
-  --marker-copilot: #d2a163;
+  /* Didactic markers. Distinct enough to recognise, quiet enough to belong. */
+  --marker-concept: #a8b6c6;
+  --marker-engineering: #86b2ae;
+  --marker-copilot: #bca98c;
 
-  /* Type */
+  /* ── Depth ────────────────────────────────────────────────────────────── */
+  /* How hard the vignette holds the reading column down against the space
+     behind it. The scene's own depth — camera standoff, construct ranges,
+     lighting by state — lives in js/core/config.js, where the camera is. */
+  --veil-core: 0.9;
+  --veil-edge: 0.26;
+
+  /* ── Type ─────────────────────────────────────────────────────────────── */
   --font-sans: 'Inter Variable', 'Inter', 'Segoe UI Variable Text', 'Segoe UI',
     system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', 'SFMono-Regular',
     Consolas, 'Liberation Mono', monospace;
 
-  --size-hero: clamp(4.5rem, 18vw, 17rem);
-  --size-year-ghost: clamp(5rem, 13vw, 12rem);
-  --size-display: clamp(2.1rem, 4.4vw, 4rem);
-  --size-title: clamp(1.7rem, 2.9vw, 2.6rem);
-  --size-lead: clamp(1.1rem, 1.45vw, 1.45rem);
-  --size-body: clamp(0.975rem, 1.02vw, 1.0625rem);
-  --size-small: 0.875rem;
-  --size-label: 0.6875rem;
+  /* DISPLAY — coordinates and openings. Optical size pushed to its top end. */
+  --size-hero: clamp(4rem, 15vw, 13rem);
+  --size-coordinate: clamp(2.75rem, 6.8vw, 6.5rem);
+  --size-display: clamp(2.1rem, 4vw, 3.75rem);
 
-  --leading-tight: 1.04;
-  --leading-snug: 1.26;
+  /* EDITORIAL — the reading voice. */
+  --size-title: clamp(1.5rem, 2.3vw, 2.1rem);
+  --size-question: clamp(1.6rem, 2.7vw, 2.5rem);
+  --size-lead: clamp(1.08rem, 1.35vw, 1.4rem);
+  --size-body: clamp(0.975rem, 1vw, 1.0625rem);
+  --size-small: 0.875rem;
+
+  /* TECHNICAL — labels, years, parameters. */
+  --size-label: 0.6875rem;
+  --size-label-lg: 0.75rem;
+
+  --leading-tight: 0.98;
+  --leading-display: 1.06;
+  --leading-snug: 1.24;
   --leading-body: 1.62;
 
+  --track-display: -0.03em;
+  --track-tight: -0.02em;
   --track-label: 0.2em;
-  --track-tight: -0.022em;
+  --track-wide: 0.34em;
 
-  /* Space — a 4px base with a widening step, so the layout breathes. */
+  /* ── Space ────────────────────────────────────────────────────────────── */
   --s-1: 0.25rem;
   --s-2: 0.5rem;
   --s-3: 0.75rem;
@@ -66,37 +108,61 @@
   --s-8: 8.5rem;
 
   --gutter: clamp(1.5rem, 6vw, 7rem);
-  --measure: 46ch;
+  --measure: 42ch;
   --shell-max: 1680px;
 
-  /* Motion */
-  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --ease-in-out: cubic-bezier(0.65, 0.05, 0.36, 1);
-  --dur-fast: 180ms;
-  --dur-base: 320ms;
-  --dur-slow: 640ms;
+  /* ── Border & radius ──────────────────────────────────────────────────── */
+  /* Almost everything here is square. Radius is for controls only. */
+  --radius-control: 2px;
+  --radius-round: 50%;
+  --border-hairline: 1px solid var(--line-hairline);
+  --border-structure: 1px solid var(--line-structure);
 
-  /* Layers */
+  /* ── Motion ───────────────────────────────────────────────────────────── */
+  --dur-instant: 120ms;
+  --dur-short: 220ms;
+  --dur-base: 380ms;
+  --dur-long: 640ms;
+  --dur-slow: 1100ms;
+  --dur-cinematic: 1800ms;
+
+  /* Precise deceleration. No bounce, no elastic, no overshoot. */
+  --ease-out: cubic-bezier(0.16, 0.84, 0.44, 1);
+  --ease-in: cubic-bezier(0.55, 0, 0.9, 0.35);
+  --ease-in-out: cubic-bezier(0.62, 0.02, 0.24, 1);
+
+  /* The copy stagger is computed per element from `--si`; see css/layout.css. */
+
+  /* ── Layers ───────────────────────────────────────────────────────────── */
   --z-backdrop: 0;
-  --z-journey: 1;
+  --z-veil: 1;
+  --z-journey: 2;
+  --z-flash: 18;
   --z-rail: 20;
   --z-topbar: 30;
   --z-overlay: 40;
+  --z-debug: 60;
 
   color-scheme: dark;
 }
 
-/* The reader asked for stillness — or the system did. */
+/* The reader asked for stillness — or the system did. Content is untouched. */
 .reduced-motion {
-  --dur-fast: 1ms;
+  --dur-instant: 1ms;
+  --dur-short: 1ms;
   --dur-base: 1ms;
+  --dur-long: 1ms;
   --dur-slow: 1ms;
+  --dur-cinematic: 1ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --dur-fast: 1ms;
+    --dur-instant: 1ms;
+    --dur-short: 1ms;
     --dur-base: 1ms;
+    --dur-long: 1ms;
     --dur-slow: 1ms;
+    --dur-cinematic: 1ms;
   }
 }

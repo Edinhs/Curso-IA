@@ -70,6 +70,9 @@
         items.push({ era: era, item: item, button: button });
       });
 
+      // The distance covered, drawn as the brighter part of the line — a
+      // reading of position in the journey, not a percentage of a course.
+      var travelled = dom.el('span', { class: 'rail__travelled', 'aria-hidden': 'true' });
       var cursor = dom.el('span', { class: 'rail__cursor', 'aria-hidden': 'true' });
       var live = dom.el('p', { class: 'sr-only', 'aria-live': 'polite', 'aria-atomic': 'true' });
 
@@ -79,7 +82,10 @@
         children: [
           dom.el('div', {
             class: 'rail__track',
-            children: [dom.el('span', { class: 'rail__line', 'aria-hidden': 'true' }), cursor, list]
+            children: [
+              dom.el('span', { class: 'rail__line', 'aria-hidden': 'true' }),
+              travelled, cursor, list
+            ]
           })
         ]
       });
@@ -102,8 +108,7 @@
           else entry.button.removeAttribute('aria-current');
         });
 
-        nav.style.setProperty('--rail-accent', era.accent);
-        document.documentElement.style.setProperty('--era-accent', era.accent);
+        document.documentElement.style.setProperty('--signature', era.accent);
         live.textContent = era.label + ' — ' + era.title + '. ' + era.caption;
       });
 
